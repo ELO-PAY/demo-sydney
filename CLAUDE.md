@@ -17,8 +17,21 @@
   page, newest first). DB cleared of test data. See README-BUILD1.md.
 - Admin account seeded: ✅ emma-lee@austpayroll.com.au (created + sign-in verified,
   incl. a live login on production). Password was shown once in terminal at seed time.
-- Build 2 (all) status: [pending]
-- Resend domain verified: [pending] — Build 2
+- Build 2 (all) status: ⏳ MOSTLY LIVE — the full /admin back end is deployed
+  and verified at https://demo-sydney.vercel.app: nav across Pipeline / People /
+  Orders / Newsletter; move each inquiry through stages (every real change writes
+  one activity_log row, verified end-to-end); searchable People directory with
+  custom attributes; person record showing full history (inquiries + status
+  timeline + orders) with an add-order form; Orders list; Newsletter list
+  (ok_to_contact = true). All of /admin sits behind login (from Build 1).
+  Migration 0002 applied (orders, activity_log, set_contact_status()).
+  NOT DONE: Resend / confirmation email — deferred by choice until a sending
+  domain is verified (see below). So Build 2's DoD is not fully met yet.
+- Resend domain verified: [pending] — DEFERRED. The site is on demo-sydney.vercel.app,
+  a Vercel subdomain that cannot be verified in Resend (no DNS control). Needs a
+  real owned domain + DNS records before email can be wired. When ready: add the
+  domain in Resend, put RESEND_API_KEY in .env.local + Vercel, confirm the sender,
+  then build the confirmation + notification emails on form submit.
 
 # How to use this catalog
 
