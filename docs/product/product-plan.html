@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product plan · ELO Payroll Association</title>
+<style>
+  :root{
+    --navy:#003B5C;
+    --teal:#5CB8B2;
+    --bg:#D0D3D4;
+    --ink:#0e1a22;
+    --card:#ffffff;
+    --line:#b9bec0;
+    --muted:#4a5560;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px;}
+  header.masthead{
+    background:var(--navy);
+    color:#fff;
+    border-radius:14px;
+    padding:40px 40px 34px;
+    margin-bottom:36px;
+    border-left:10px solid var(--teal);
+  }
+  header.masthead .kicker{
+    text-transform:uppercase;
+    letter-spacing:.18em;
+    font-size:12px;
+    font-weight:700;
+    color:var(--teal);
+    margin:0 0 10px;
+  }
+  header.masthead h1{
+    margin:0;
+    font-size:34px;
+    font-weight:800;
+    letter-spacing:-.01em;
+  }
+  h2{
+    font-size:22px;
+    font-weight:800;
+    color:var(--navy);
+    margin:44px 0 14px;
+    padding-bottom:8px;
+    border-bottom:3px solid var(--teal);
+  }
+  h3{
+    font-size:16px;
+    font-weight:800;
+    color:var(--navy);
+    margin:22px 0 8px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+  p{margin:0 0 14px;}
+  .lead{font-size:18px;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:24px 26px;
+    margin:16px 0;
+  }
+  .build{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:6px solid var(--navy);
+    border-radius:12px;
+    padding:26px 28px;
+    margin:20px 0;
+  }
+  .build .tag{
+    display:inline-block;
+    background:var(--navy);
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    padding:5px 12px;
+    border-radius:999px;
+    margin-bottom:12px;
+  }
+  .build h2{border:none;margin:0 0 4px;padding:0;font-size:24px;}
+  .goal{
+    background:var(--bg);
+    border-left:5px solid var(--teal);
+    padding:14px 18px;
+    border-radius:8px;
+    margin:14px 0 4px;
+  }
+  dl.kv{
+    display:grid;
+    grid-template-columns:minmax(180px,240px) 1fr;
+    gap:0;
+    margin:0;
+  }
+  dl.kv dt{
+    font-weight:700;
+    color:var(--navy);
+    padding:10px 14px 10px 0;
+    border-bottom:1px solid var(--line);
+  }
+  dl.kv dd{
+    margin:0;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    color:var(--ink);
+  }
+  ul.check{list-style:none;padding:0;margin:8px 0 0;}
+  ul.check li{
+    position:relative;
+    padding:7px 0 7px 34px;
+    border-bottom:1px solid var(--line);
+  }
+  ul.check li:last-child{border-bottom:none;}
+  ul.check li::before{
+    content:"";
+    position:absolute;
+    left:0;top:10px;
+    width:20px;height:20px;
+    border:2px solid var(--navy);
+    border-radius:5px;
+    background:#fff;
+  }
+  ul.check.success li::before{
+    border-color:var(--teal);
+  }
+  ul.plain{margin:8px 0 0;padding-left:22px;}
+  ul.plain li{margin:5px 0;}
+  .not-building{
+    background:#fff;
+    border:1px dashed var(--line);
+    border-radius:10px;
+    padding:16px 20px;
+    color:var(--muted);
+    font-size:15px;
+  }
+  code{
+    background:var(--bg);
+    padding:2px 6px;
+    border-radius:5px;
+    font-size:13px;
+    font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">Product Plan</p>
+    <h1>ELO Payroll Association</h1>
+  </header>
+
+  <h2>What we're actually building and why</h2>
+  <div class="card">
+    <p class="lead"><strong>In one sentence:</strong> A single place where
+    every payroll consulting inquiry is captured the moment it arrives and
+    carries a visible contact status, so no lead is ever misassigned,
+    dropped after one unanswered call, or lost track of again — the three
+    ways they slip through today.</p>
+    <p><strong>Who it's for:</strong> Me as the operator (the CEO and Head
+    of Advisory who work the leads), plus the payroll and finance
+    decision-makers who fill out my form looking for compliance reviews,
+    remediation, system reviews, or help buying payroll technology.</p>
+    <div class="not-building">
+      <strong>Deliberately NOT building:</strong> no affiliates, no
+      subscriptions, no cohorts, no analytics dashboards, no integrations
+      beyond what's named here. If it isn't load-bearing for capturing and
+      working a lead, it's out.
+    </div>
+  </div>
+
+  <h2>Interview summary</h2>
+  <div class="card">
+    <dl class="kv">
+      <dt>Business</dt><dd>ELO Payroll Association — payroll consulting services</dd>
+      <dt>What's broken today</dt><dd>Form → HubSpot ticket → assigned to CEO / Head of Advisory. Leads slip via misassignment, no-answer with no retry, and losing track of who's been contacted.</dd>
+      <dt>90-day win</dt><dd>Every lead captured and called, with a follow-up email sent when clients don't answer or return calls.</dd>
+      <dt>Volume</dt><dd>~5 inquiries per week</dd>
+      <dt>Inquiry types</dt><dd><code>payroll_compliance_review</code>, <code>payroll_remediation_review</code>, <code>technology_procurement</code>, <code>payroll_system_review</code></dd>
+      <dt>Design system</dt><dd>Bold Ferrari — high contrast, confident, strong color</dd>
+      <dt>Brand colors</dt><dd>Main #003B5C · Accent #5CB8B2 · Background #D0D3D4</dd>
+      <dt>Custom attributes</dt><dd>
+        number_of_employees — short typed note<br>
+        current_industry — pick from a list (Retail, Hospitality, Mining, Construction, Rail, Clerical, Social and Community Services)<br>
+        ideal_project_start_date — a date
+      </dd>
+      <dt>Domain</dt><dd>TBC (to be confirmed before deploy)</dd>
+    </dl>
+  </div>
+
+  <h2>The brief</h2>
+  <div class="card">
+    <p>Two surfaces: a public marketing site that captures leads, and an
+    <code>/admin</code> CRM. The stack is already installed and wired
+    (Next.js on Vercel, Supabase, Resend, domain) — nothing gets
+    reinstalled. <code>/admin</code> starts open and gets locked down with
+    email-and-password Supabase Auth later; no auth is added until I
+    explicitly ask.</p>
+    <h3>The four parts</h3>
+    <ul class="plain">
+      <li><strong>People</strong> — contact directory, one row per person, deduplicated by email. Custom attributes live in the <code>attributes</code> jsonb column.</li>
+      <li><strong>Contacts</strong> — inquiry pipeline. Each inquiry links to a person and moves through <code>new_lead → contacted → discovery_call → proposal → won → lost</code>. <code>type</code> is constrained to my four inquiry types.</li>
+      <li><strong>activity_log</strong> — one row per status change on a Contacts row.</li>
+      <li><strong>Orders</strong> — what people bought (product, amount, currency, status).</li>
+      <li><strong>Newsletter</strong> — not a table; tracked by <code>people.ok_to_contact = true</code>.</li>
+    </ul>
+    <h3>Conventions</h3>
+    <ul class="plain">
+      <li>Upsert people by email; never duplicate a person.</li>
+      <li>Access Supabase server-side with the service key; never expose secrets to the client; keys live in environment variables only.</li>
+      <li>Keep it simple: no affiliates, no subscriptions, no cohorts.</li>
+      <li>Work one step at a time and wait for my approval before each step.</li>
+    </ul>
+  </div>
+
+  <div class="build">
+    <span class="tag">Build 1 · Small</span>
+    <h2>Prove the loop</h2>
+    <div class="goal">
+      <strong>Goal:</strong> A stranger can submit an inquiry on my live
+      site and I can see that lead inside <code>/admin</code>, on the same
+      day, without anyone touching the database by hand. This closes the
+      exact gap I named in Q1. It's the smallest thing that proves the
+      whole system works end to end. Nothing else matters until this is
+      real.
+    </div>
+    <h3>Scope</h3>
+    <p>The People and Contacts tables with my custom attributes wired into
+    the jsonb column; a working contact form on the live marketing site
+    that writes a People row (upserted by email) and a linked Contacts row;
+    one admin login with a single verified account; one admin page that
+    lists incoming leads newest first.</p>
+    <h3>Definition of Done</h3>
+    <ul class="check">
+      <li>The contact form is live on my real domain, not localhost.</li>
+      <li>Submitting it creates exactly one People row and one linked Contacts row, deduplicated by email on repeat submits.</li>
+      <li>My chosen custom attributes are saved correctly inside attributes.</li>
+      <li>A new Contacts row lands in status new_lead.</li>
+      <li>I can log in to /admin with my one seeded account.</li>
+      <li>The admin leads page shows the submission within seconds, newest first.</li>
+      <li>I personally run the full flow once: submit as a visitor, log in, see it.</li>
+    </ul>
+    <h3>Success Criteria</h3>
+    <ul class="check success">
+      <li>From a cold start, I can go submit to visible in under 60 seconds.</li>
+      <li>Two submissions from the same email produce one person, not two.</li>
+      <li>I can read the lead's name, type, message, and my custom attributes on the admin page without opening Supabase.</li>
+      <li>No lead can land and go unseen, which is the failure mode I named in Q1.</li>
+    </ul>
+  </div>
+
+  <div class="build">
+    <span class="tag">Build 2 · All</span>
+    <h2>Make it the system I run the business from</h2>
+    <div class="goal">
+      <strong>Goal:</strong> Turn the proven loop into the place I actually
+      manage relationships and money. After this, I work leads, record what
+      people bought, and keep my newsletter list entirely from
+      <code>/admin</code> behind my login, and every new lead gets an
+      automatic confirmation email. This is what makes my 90-day win
+      achievable.
+    </div>
+    <h3>Scope</h3>
+    <p>The rest of the <code>/admin</code> back end behind my login: the
+    full People directory, all inquiries with working pipeline stages, the
+    Orders list, and the Newsletter list (ok_to_contact = true). Plus
+    Resend wired so a confirmation email fires on form submit. Every
+    Contacts status change writes an activity_log row.</p>
+    <h3>Definition of Done</h3>
+    <ul class="check">
+      <li>All four parts (People, Contacts, Orders, Newsletter) are visible and usable in /admin, and all of /admin sits behind my login.</li>
+      <li>I can move a Contacts row through new_lead to contacted to discovery_call to proposal to won or lost from the interface.</li>
+      <li>Each status change writes one activity_log row with from_status, to_status, and actor.</li>
+      <li>The People directory is searchable and shows my custom attributes.</li>
+      <li>I can add an Orders row against a person and see it on their record.</li>
+      <li>The Newsletter list shows everyone with ok_to_contact = true.</li>
+      <li>Resend is connected, the sending domain is verified, and a real confirmation email arrives after a form submit.</li>
+    </ul>
+    <h3>Success Criteria</h3>
+    <ul class="check success">
+      <li>I can run a lead from first inquiry to won without leaving /admin or touching the database.</li>
+      <li>A person's full history (their inquiries, status changes, and orders) is visible in one place.</li>
+      <li>A test submission produces a confirmation email in the inbox, not spam, with my domain as the sender.</li>
+      <li>Nothing in /admin is reachable without logging in.</li>
+      <li>At my real inquiry volume from Q2, this keeps up without me dropping to the database by hand.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

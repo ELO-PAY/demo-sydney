@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture · ELO Payroll Association</title>
+<style>
+  :root{
+    --navy:#003B5C;
+    --teal:#5CB8B2;
+    --bg:#D0D3D4;
+    --ink:#0e1a22;
+    --card:#ffffff;
+    --line:#b9bec0;
+    --muted:#4a5560;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:48px 24px 96px;}
+  header.masthead{
+    background:var(--navy);
+    color:#fff;
+    border-radius:14px;
+    padding:40px 40px 34px;
+    margin-bottom:36px;
+    border-left:10px solid var(--teal);
+  }
+  header.masthead .kicker{
+    text-transform:uppercase;letter-spacing:.18em;font-size:12px;
+    font-weight:700;color:var(--teal);margin:0 0 10px;
+  }
+  header.masthead h1{margin:0;font-size:32px;font-weight:800;letter-spacing:-.01em;}
+  h2{
+    font-size:22px;font-weight:800;color:var(--navy);
+    margin:44px 0 14px;padding-bottom:8px;border-bottom:3px solid var(--teal);
+  }
+  h3{font-size:16px;font-weight:800;color:var(--navy);margin:22px 0 8px;}
+  p{margin:0 0 14px;}
+  .card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:24px 26px;margin:16px 0;
+  }
+  ul.plain{margin:8px 0 14px;padding-left:22px;}
+  ul.plain li{margin:6px 0;}
+  .flow{list-style:none;counter-reset:step;padding:0;margin:8px 0;}
+  .flow li{
+    counter-increment:step;position:relative;
+    padding:12px 14px 12px 52px;margin:8px 0;
+    background:var(--bg);border-left:5px solid var(--teal);border-radius:8px;
+  }
+  .flow li::before{
+    content:counter(step);position:absolute;left:12px;top:11px;
+    width:26px;height:26px;border-radius:50%;background:var(--navy);
+    color:#fff;font-weight:700;font-size:14px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  table{
+    width:100%;border-collapse:collapse;margin:6px 0 4px;font-size:14px;
+    background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  }
+  caption{
+    text-align:left;font-weight:800;color:var(--navy);font-size:16px;
+    padding:14px 0 8px;
+  }
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  thead th{background:var(--navy);color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.05em;}
+  tbody tr:last-child td{border-bottom:none;}
+  code{
+    background:var(--bg);padding:2px 6px;border-radius:5px;font-size:13px;
+    font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+  }
+  .table-scroll{overflow-x:auto;}
+  .note{color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">Architecture</p>
+    <h1>ELO Payroll Association — CRM</h1>
+  </header>
+
+  <h2>1. Overview</h2>
+  <div class="card">
+    <p>This is a Next.js (App Router) app deployed on Vercel, backed by a
+    Supabase Postgres database, with Resend for email. It has two surfaces:
+    a public marketing site that captures leads, and an <code>/admin</code>
+    CRM. <code>/admin</code> starts open and gets locked down with Supabase
+    Auth later in the build.</p>
+  </div>
+
+  <h2>2. How the pieces fit</h2>
+  <div class="card">
+    <h3>Next.js (App Router)</h3>
+    <p>Renders the public site and <code>/admin</code>. Server code handles
+    form submissions and all database reads and writes — the browser never
+    talks to the database directly.</p>
+    <h3>Vercel</h3>
+    <p>Hosts and deploys the app. Environment variables hold every secret. A
+    push deploys.</p>
+    <h3>Supabase (Postgres)</h3>
+    <p>The database. Accessed server-side only, using the service key.
+    Secrets never reach the browser.</p>
+    <h3>Resend</h3>
+    <p>Sends the confirmation email when a lead comes in (wired in Build 2).</p>
+    <h3>Environment variables</h3>
+    <ul class="plain">
+      <li><code>NEXT_PUBLIC_SUPABASE_URL</code> — the address of the Supabase project.</li>
+      <li><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> — the public client key, safe for the browser.</li>
+      <li><code>SUPABASE_SERVICE_ROLE_KEY</code> — the private server key for all reads/writes; never exposed to the client.</li>
+      <li><code>RESEND_API_KEY</code> — authorizes sending confirmation emails.</li>
+      <li><code>NEXT_PUBLIC_SITE_URL</code> — the live domain, used for email links and redirects.</li>
+    </ul>
+  </div>
+
+  <h2>3. The lead flow</h2>
+  <div class="card">
+    <ul class="flow">
+      <li>A visitor submits the contact form on the public site.</li>
+      <li>Server upserts a <strong>People</strong> row by email — an existing person is updated, never duplicated.</li>
+      <li>Server creates a linked <strong>Contacts</strong> row in status <code>new_lead</code>.</li>
+      <li>(Build 2) Resend sends a confirmation email to the visitor.</li>
+      <li>The operator sees the lead in <code>/admin</code> and works it through the pipeline.</li>
+      <li>Each status change writes one <strong>activity_log</strong> row, so nothing is ever lost track of.</li>
+    </ul>
+  </div>
+
+  <h2>4. Data model</h2>
+  <div class="card">
+
+    <div class="table-scroll">
+    <table>
+      <caption>People — one row per person, deduplicated by email</caption>
+      <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>id</td><td>uuid</td><td>primary key</td></tr>
+        <tr><td>email</td><td>text</td><td>unique — the dedupe key</td></tr>
+        <tr><td>name</td><td>text</td><td></td></tr>
+        <tr><td>phone</td><td>text</td><td></td></tr>
+        <tr><td>company</td><td>text</td><td></td></tr>
+        <tr><td>role</td><td>text</td><td></td></tr>
+        <tr><td>source_site</td><td>text</td><td>which site captured them</td></tr>
+        <tr><td>ok_to_contact</td><td>boolean</td><td>true means they're on the newsletter</td></tr>
+        <tr><td>attributes</td><td>jsonb</td><td>my custom attributes live here:
+          <ul class="plain">
+            <li><code>number_of_employees</code> — text (short typed note)</li>
+            <li><code>current_industry</code> — text from a fixed list: Retail, Hospitality, Mining, Construction, Rail, Clerical, Social and Community Services</li>
+            <li><code>ideal_project_start_date</code> — date</li>
+          </ul>
+        </td></tr>
+        <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+        <tr><td>updated_at</td><td>timestamptz</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="table-scroll">
+    <table>
+      <caption>Contacts — inquiry pipeline; each links to a person</caption>
+      <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>id</td><td>uuid</td><td>primary key</td></tr>
+        <tr><td>person_id</td><td>uuid</td><td>references People(id)</td></tr>
+        <tr><td>type</td><td>text</td><td>constrained to my inquiry types: <code>payroll_compliance_review</code>, <code>payroll_remediation_review</code>, <code>technology_procurement</code>, <code>payroll_system_review</code></td></tr>
+        <tr><td>subject</td><td>text</td><td></td></tr>
+        <tr><td>message</td><td>text</td><td></td></tr>
+        <tr><td>source</td><td>text</td><td></td></tr>
+        <tr><td>status</td><td>text</td><td>new_lead, contacted, discovery_call, proposal, won, lost</td></tr>
+        <tr><td>metadata</td><td>jsonb</td><td></td></tr>
+        <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="table-scroll">
+    <table>
+      <caption>activity_log — one row per Contacts status change</caption>
+      <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>id</td><td>uuid</td><td>primary key</td></tr>
+        <tr><td>contact_id</td><td>uuid</td><td>references Contacts(id)</td></tr>
+        <tr><td>person_id</td><td>uuid</td><td>references People(id)</td></tr>
+        <tr><td>from_status</td><td>text</td><td></td></tr>
+        <tr><td>to_status</td><td>text</td><td></td></tr>
+        <tr><td>actor</td><td>text</td><td>who made the change</td></tr>
+        <tr><td>note</td><td>text</td><td></td></tr>
+        <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="table-scroll">
+    <table>
+      <caption>Orders — what people bought</caption>
+      <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>id</td><td>uuid</td><td>primary key</td></tr>
+        <tr><td>person_id</td><td>uuid</td><td>references People(id)</td></tr>
+        <tr><td>product_name</td><td>text</td><td></td></tr>
+        <tr><td>amount_cents</td><td>integer</td><td></td></tr>
+        <tr><td>currency</td><td>text</td><td></td></tr>
+        <tr><td>status</td><td>text</td><td>pending, paid, refunded, cancelled</td></tr>
+        <tr><td>created_at</td><td>timestamptz</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p class="note"><strong>Newsletter</strong> — not a table. Tracked by
+    <code>People.ok_to_contact = true</code>.</p>
+  </div>
+
+  <h2>5. Relationships</h2>
+  <div class="card">
+    <ul class="plain">
+      <li>One <strong>Person</strong> has many <strong>Contacts</strong>.</li>
+      <li>One <strong>Contacts</strong> row has many <strong>activity_log</strong> rows.</li>
+      <li>One <strong>Person</strong> has many <strong>Orders</strong>.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
