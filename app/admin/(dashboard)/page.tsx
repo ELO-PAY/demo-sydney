@@ -70,6 +70,30 @@ function Kpi({
   );
 }
 
+// A quarter-over-quarter change cell (absolute + percent).
+function ChangeCell({
+  cur,
+  prev,
+  money = false,
+}: {
+  cur: number;
+  prev: number;
+  money?: boolean;
+}) {
+  const d = cur - prev;
+  const pct = prev > 0 ? Math.round((d / prev) * 100) : null;
+  const cls = d > 0 ? "kpi-delta up" : d < 0 ? "kpi-delta down" : "kpi-delta";
+  const arrow = d > 0 ? "▲" : d < 0 ? "▼" : "–";
+  const mag = money ? formatMoney(Math.abs(d)) : String(Math.abs(d));
+  if (d === 0) return <span className="kpi-delta">no change</span>;
+  return (
+    <span className={cls}>
+      {arrow} {mag}
+      {pct !== null ? ` (${d > 0 ? "+" : "-"}${Math.abs(pct)}%)` : ""}
+    </span>
+  );
+}
+
 // Compact inline "move stage" control reused in the attention lists.
 function MoveControl({
   contactId,
@@ -208,6 +232,46 @@ export default async function DashboardPage() {
     month: "short",
   });
   const weekText = `${rangeLabel.format(now - wk)} – ${rangeLabel.format(now)}`;
+
+  // ---- Quarter view (this quarter-to-date vs the same point last quarter) ----
+  const rangeMetrics = (start: number, end: number) => {
+    const within = (iso: string) => {
+      const t = new Date(iso).getTime();
+      return t >= start && t < end;
+    };
+    return {
+      newInq: contacts.filter((c) => within(c.created_at)).length,
+      won: activity.filter((a) => a.to_status === "won" && within(a.created_at))
+        .length,
+      revenue: orders
+        .filter((o) => o.status === "paid" && within(o.created_at))
+        .reduce((s, o) => s + (o.amount_cents ?? 0), 0),
+    };
+  };
+
+  // Quarter boundaries from the current month in Sydney time. Boundaries are
+  // taken at UTC midnight — within hours of Sydney's, immaterial for monthly counts.
+  const sydParts = new Intl.DateTimeFormat("en-AU", {
+    timeZone: "Australia/Sydney",
+    year: "numeric",
+    month: "numeric",
+  }).formatToParts(new Date(now));
+  const yr = Number(sydParts.find((p) => p.type === "year")!.value);
+  const mo = Number(sydParts.find((p) => p.type === "month")!.value) - 1; // 0-based
+  const qStartMo = Math.floor(mo / 3) * 3;
+  const thisQStart = Date.UTC(yr, qStartMo, 1);
+  const lastQStart =
+    qStartMo === 0 ? Date.UTC(yr - 1, 9, 1) : Date.UTC(yr, qStartMo - 3, 1);
+  const elapsed = now - thisQStart;
+  const daysElapsed = Math.max(1, Math.round(elapsed / DAY));
+
+  const thisQTD = rangeMetrics(thisQStart, now + 1);
+  const lastQSame = rangeMetrics(lastQStart, lastQStart + elapsed);
+  const lastQFull = rangeMetrics(lastQStart, thisQStart);
+
+  const qNum = Math.floor(qStartMo / 3) + 1;
+  const lastQNum = qNum === 1 ? 4 : qNum - 1;
+  const lastQYr = qNum === 1 ? yr - 1 : yr;
 
   return (
     <>
@@ -376,6 +440,73 @@ export default async function DashboardPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ---- Quarter view ---- */}
+      <section className="panel">
+        <h2>
+          Quarter view{" "}
+          <span
+            className="muted"
+            style={{ fontWeight: 400, fontSize: 14 }}
+          >
+            · Q{qNum} {yr} so far
+          </span>
+        </h2>
+        <p className="muted" style={{ marginTop: -8 }}>
+          First {daysElapsed} days of Q{qNum} {yr} vs the same {daysElapsed}{" "}
+          days of Q{lastQNum} {lastQYr}.
+        </p>
+        <div className="table-wrap">
+          <table className="table qtr-table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>
+                  Q{qNum} to date
+                </th>
+                <th>
+                  Q{lastQNum} same point
+                </th>
+                <th>Change</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>New inquiries</td>
+                <td>{thisQTD.newInq}</td>
+                <td>{lastQSame.newInq}</td>
+                <td>
+                  <ChangeCell cur={thisQTD.newInq} prev={lastQSame.newInq} />
+                </td>
+              </tr>
+              <tr>
+                <td>Deals won</td>
+                <td>{thisQTD.won}</td>
+                <td>{lastQSame.won}</td>
+                <td>
+                  <ChangeCell cur={thisQTD.won} prev={lastQSame.won} />
+                </td>
+              </tr>
+              <tr>
+                <td>Revenue (paid)</td>
+                <td>{formatMoney(thisQTD.revenue)}</td>
+                <td>{formatMoney(lastQSame.revenue)}</td>
+                <td>
+                  <ChangeCell
+                    cur={thisQTD.revenue}
+                    prev={lastQSame.revenue}
+                    money
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="muted more">
+          For context — full Q{lastQNum} {lastQYr}: {lastQFull.newInq}{" "}
+          inquiries · {lastQFull.won} won · {formatMoney(lastQFull.revenue)}.
+        </p>
       </section>
     </>
   );

@@ -882,3 +882,14 @@ a {
   font-size: 11px;
   color: #6a7a84;
 }
+
+/* ---- Quarter view table ---- */
+.qtr-table th:not(:first-child),
+.qtr-table td:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+.qtr-table td:first-child {
+  font-weight: 600;
+  color: var(--navy);
+}
