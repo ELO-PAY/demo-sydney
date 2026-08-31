@@ -25,6 +25,12 @@
   timeline + orders) with an add-order form; Orders list; Newsletter list
   (ok_to_contact = true). All of /admin sits behind login (from Build 1).
   Migration 0002 applied (orders, activity_log, set_contact_status()).
+  Plus a weekly dashboard at /admin (KPIs vs prev 7d, "needs attention"
+  action list with inline stage-move, pipeline funnel, 8-week trend);
+  Pipeline moved to /admin/pipeline.
+  NOTE: the DB currently holds ~100 SAMPLE records (people tagged
+  source_site='sample_seed') for the dashboard demo. Remove with
+  `npm run db:clear-samples` before real use; reseed with db:seed-samples.
   NOT DONE: Resend / confirmation email — deferred by choice until a sending
   domain is verified (see below). So Build 2's DoD is not fully met yet.
 - Resend domain verified: [pending] — DEFERRED. The site is on demo-sydney.vercel.app,
