@@ -11,10 +11,12 @@
 
 ## Build (filled as we go)
 - Plan written: [done]
-- Build 1 (small) status: [pending]
-- Admin account seeded: [pending]
+- Build 1 (small) status: ✅ code complete + fully verified locally (form → dedup →
+  attributes → admin login → leads page all pass). GO-LIVE needs two owner steps:
+  (1) add env vars to Vercel, (2) git push to main (auto-deploys). See README-BUILD1.md.
+- Admin account seeded: ✅ emma-lee@austpayroll.com.au (created + sign-in verified)
 - Build 2 (all) status: [pending]
-- Resend domain verified: [pending]
+- Resend domain verified: [pending] — Build 2
 
 # How to use this catalog
 
