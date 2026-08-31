@@ -2,12 +2,12 @@
 
 ## Stack (already installed and wired — record the values)
 - GitHub repo: ELO-PAY/demo-sydney (https://github.com/ELO-PAY/demo-sydney) — connected, default branch main
-- Vercel project: [confirm]
-- Domain: [confirm]
-- Supabase project: [confirm]
-- Supabase URL: [confirm]
-- Supabase service key: [confirm]
-- Resend account: [confirm]
+- Vercel project: demo-sydney (connected to GitHub, auto-deploys on push to main)
+- Domain: https://demo-sydney.vercel.app (Vercel default URL)
+- Supabase project: vhjikdnqngemqgnkjvuu
+- Supabase URL: https://vhjikdnqngemqgnkjvuu.supabase.co
+- Supabase service key: stored in .env.local (SUPABASE_SERVICE_ROLE_KEY) — never commit
+- Resend account: [pending] — Build 2 only, not needed for Build 1
 
 ## Build (filled as we go)
 - Plan written: [done]
