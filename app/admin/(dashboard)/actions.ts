@@ -57,6 +57,7 @@ export async function updateContactStatus(formData: FormData): Promise<void> {
   }
 
   revalidatePath("/admin");
+  revalidatePath("/admin/pipeline");
   const personId = str(formData, "person_id");
   if (personId) revalidatePath(`/admin/people/${personId}`);
 }

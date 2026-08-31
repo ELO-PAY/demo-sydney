@@ -4,170 +4,379 @@ import {
   inquiryLabel,
   statusLabel,
   PIPELINE_STAGES,
-  ATTR_LABELS,
 } from "@/lib/constants";
-import { formatWhen } from "@/lib/format";
+import { formatMoney } from "@/lib/format";
 import { updateContactStatus } from "./actions";
 
-// Always fetch fresh — new leads must appear within seconds.
+// Always fresh — this is a live operational view.
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-type Person = {
-  id: string;
-  email: string;
-  name: string | null;
-  phone: string | null;
-  company: string | null;
-  role: string | null;
-  ok_to_contact: boolean;
-  attributes: Record<string, unknown> | null;
-};
+const DAY = 86400000;
+const OPEN_MIDDLE = ["contacted", "discovery_call", "proposal"];
 
-type Lead = {
+type Contact = {
   id: string;
+  person_id: string;
   type: string;
-  subject: string | null;
-  message: string | null;
   status: string;
   created_at: string;
-  people: Person | null;
+  people: { id: string; name: string | null; company: string | null } | null;
 };
+type Activity = { contact_id: string; to_status: string | null; created_at: string };
+type Order = { amount_cents: number; status: string; created_at: string };
 
-export default async function PipelinePage() {
+function daysAgo(iso: string, now: number): number {
+  return Math.floor((now - new Date(iso).getTime()) / DAY);
+}
+
+// A KPI tile with a week-over-week delta.
+function Kpi({
+  label,
+  value,
+  delta,
+  goodUp = true,
+  hint,
+}: {
+  label: string;
+  value: string;
+  delta?: number;
+  goodUp?: boolean;
+  hint?: string;
+}) {
+  let cls = "kpi-delta";
+  let text = "vs prev 7d";
+  if (typeof delta === "number") {
+    if (delta > 0) {
+      cls += goodUp ? " up" : " down";
+      text = `▲ ${delta} vs prev 7d`;
+    } else if (delta < 0) {
+      cls += goodUp ? " down" : " up";
+      text = `▼ ${Math.abs(delta)} vs prev 7d`;
+    } else {
+      text = "no change vs prev 7d";
+    }
+  }
+  return (
+    <div className="kpi">
+      <div className="kpi-label">{label}</div>
+      <div className="kpi-value">{value}</div>
+      {hint ? (
+        <div className="kpi-delta">{hint}</div>
+      ) : (
+        <div className={cls}>{text}</div>
+      )}
+    </div>
+  );
+}
+
+// Compact inline "move stage" control reused in the attention lists.
+function MoveControl({
+  contactId,
+  personId,
+  status,
+}: {
+  contactId: string;
+  personId: string;
+  status: string;
+}) {
+  return (
+    <form action={updateContactStatus} className="move-inline">
+      <input type="hidden" name="contact_id" value={contactId} />
+      <input type="hidden" name="person_id" value={personId} />
+      <select name="to_status" defaultValue={status} aria-label="Move to stage">
+        {PIPELINE_STAGES.map((s) => (
+          <option key={s} value={s}>
+            {statusLabel(s)}
+          </option>
+        ))}
+      </select>
+      <button type="submit" className="btn btn-sm">
+        Save
+      </button>
+    </form>
+  );
+}
+
+export default async function DashboardPage() {
   const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("contacts")
-    .select(
-      "id, type, subject, message, status, created_at, people ( id, email, name, phone, company, role, ok_to_contact, attributes )"
-    )
-    .order("created_at", { ascending: false });
+  const [{ data: cData, error: cErr }, { data: aData }, { data: oData }] =
+    await Promise.all([
+      supabase
+        .from("contacts")
+        .select(
+          "id, person_id, type, status, created_at, people ( id, name, company )"
+        )
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("activity_log")
+        .select("contact_id, to_status, created_at"),
+      supabase.from("orders").select("amount_cents, status, created_at"),
+    ]);
 
-  if (error) {
+  if (cErr) {
     return (
       <div className="empty">
-        <p>Couldn&apos;t load the pipeline: {error.message}</p>
+        <p>Couldn&apos;t load the dashboard: {cErr.message}</p>
       </div>
     );
   }
 
-  const leads = (data ?? []) as unknown as Lead[];
+  const contacts = (cData ?? []) as unknown as Contact[];
+  const activity = (aData ?? []) as Activity[];
+  const orders = (oData ?? []) as Order[];
+  const now = Date.now();
+  const wk = 7 * DAY;
+
+  // Last activity per contact = max(created_at, latest logged change).
+  const lastActivity = new Map<string, number>();
+  for (const c of contacts) lastActivity.set(c.id, new Date(c.created_at).getTime());
+  for (const a of activity) {
+    const t = new Date(a.created_at).getTime();
+    const prev = lastActivity.get(a.contact_id) ?? 0;
+    if (t > prev) lastActivity.set(a.contact_id, t);
+  }
+
+  const inWindow = (iso: string, startAgo: number, endAgo: number) => {
+    const t = new Date(iso).getTime();
+    return t >= now - startAgo && t < now - endAgo;
+  };
+
+  // ---- KPIs (last 7d vs previous 7d) ----
+  const newThis = contacts.filter((c) => inWindow(c.created_at, wk, 0)).length;
+  const newPrev = contacts.filter((c) => inWindow(c.created_at, 2 * wk, wk)).length;
+
+  const wonThis = activity.filter(
+    (a) => a.to_status === "won" && inWindow(a.created_at, wk, 0)
+  ).length;
+  const wonPrev = activity.filter(
+    (a) => a.to_status === "won" && inWindow(a.created_at, 2 * wk, wk)
+  ).length;
+
+  const movesThis = activity.filter((a) => inWindow(a.created_at, wk, 0)).length;
+  const movesPrev = activity.filter((a) => inWindow(a.created_at, 2 * wk, wk)).length;
+
+  const revThis = orders
+    .filter((o) => o.status === "paid" && inWindow(o.created_at, wk, 0))
+    .reduce((s, o) => s + (o.amount_cents ?? 0), 0);
+  const revPrev = orders
+    .filter((o) => o.status === "paid" && inWindow(o.created_at, 2 * wk, wk))
+    .reduce((s, o) => s + (o.amount_cents ?? 0), 0);
+
+  // ---- Needs attention ----
+  const toContact = contacts
+    .filter((c) => c.status === "new_lead")
+    .sort((a, b) => a.created_at.localeCompare(b.created_at)); // oldest first
+
+  const goingCold = contacts
+    .filter(
+      (c) =>
+        OPEN_MIDDLE.includes(c.status) &&
+        (lastActivity.get(c.id) ?? 0) < now - wk
+    )
+    .sort(
+      (a, b) => (lastActivity.get(a.id) ?? 0) - (lastActivity.get(b.id) ?? 0)
+    ); // coldest first
+
+  // ---- Pipeline snapshot ----
+  const byStage: Record<string, number> = {};
+  for (const s of PIPELINE_STAGES) byStage[s] = 0;
+  for (const c of contacts) byStage[c.status] = (byStage[c.status] ?? 0) + 1;
+  const maxStage = Math.max(1, ...PIPELINE_STAGES.map((s) => byStage[s]));
+
+  // ---- 8-week trend (7-day buckets, oldest→newest) ----
+  const BUCKETS = 8;
+  const trend = Array.from({ length: BUCKETS }, () => ({ inq: 0, won: 0 }));
+  const bucketOf = (iso: string) => {
+    const age = (now - new Date(iso).getTime()) / wk;
+    const idx = BUCKETS - 1 - Math.floor(age);
+    return idx >= 0 && idx < BUCKETS ? idx : -1;
+  };
+  for (const c of contacts) {
+    const b = bucketOf(c.created_at);
+    if (b >= 0) trend[b].inq++;
+  }
+  for (const a of activity) {
+    if (a.to_status !== "won") continue;
+    const b = bucketOf(a.created_at);
+    if (b >= 0) trend[b].won++;
+  }
+  const maxTrend = Math.max(1, ...trend.map((t) => t.inq));
+
+  const rangeLabel = new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "short",
+  });
+  const weekText = `${rangeLabel.format(now - wk)} – ${rangeLabel.format(now)}`;
 
   return (
     <>
-      <h1>Pipeline</h1>
+      <h1>This week</h1>
       <p className="count">
-        {leads.length === 0
-          ? "No inquiries yet."
-          : `${leads.length} inquir${leads.length === 1 ? "y" : "ies"}, newest first.`}
+        Your weekly view · last 7 days ({weekText}). Work the{" "}
+        <b>Needs your attention</b> list, then check the trend.
       </p>
 
-      {leads.length === 0 ? (
-        <div className="empty">
-          When someone submits the contact form, their inquiry lands here
-          instantly.
-        </div>
-      ) : (
-        leads.map((lead) => {
-          const p = lead.people;
-          const attrs = (p?.attributes ?? {}) as Record<string, unknown>;
-          return (
-            <article key={lead.id} className="lead">
-              <div className="lead-top">
-                <p className="lead-name">
-                  {p ? (
-                    <Link href={`/admin/people/${p.id}`}>
-                      {p.name || "Unknown"}
-                    </Link>
-                  ) : (
-                    "Unknown"
-                  )}
-                </p>
-                <span className="lead-when">{formatWhen(lead.created_at)}</span>
-              </div>
+      {/* ---- KPI row ---- */}
+      <div className="kpi-grid">
+        <Kpi label="New inquiries" value={String(newThis)} delta={newThis - newPrev} />
+        <Kpi label="Deals won" value={String(wonThis)} delta={wonThis - wonPrev} />
+        <Kpi
+          label="Actions logged"
+          value={String(movesThis)}
+          delta={movesThis - movesPrev}
+        />
+        <Kpi
+          label="Revenue (paid)"
+          value={formatMoney(revThis)}
+          delta={
+            revThis === revPrev ? 0 : Math.round((revThis - revPrev) / 100)
+          }
+        />
+      </div>
 
-              <div
-                style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}
-              >
-                <span className="badge">{inquiryLabel(lead.type)}</span>
-                <span className={`badge badge-status status-${lead.status}`}>
-                  {statusLabel(lead.status)}
-                </span>
-              </div>
-
-              <div className="lead-meta">
-                {p?.email && (
-                  <span>
-                    <b>Email:</b> <a href={`mailto:${p.email}`}>{p.email}</a>
-                  </span>
-                )}
-                {p?.phone && (
-                  <span>
-                    <b>Phone:</b> {p.phone}
-                  </span>
-                )}
-                {p?.company && (
-                  <span>
-                    <b>Company:</b> {p.company}
-                  </span>
-                )}
-                {p?.role && (
-                  <span>
-                    <b>Role:</b> {p.role}
-                  </span>
-                )}
-                {p?.ok_to_contact && (
-                  <span>
-                    <b>Newsletter:</b> opted in
-                  </span>
-                )}
-              </div>
-
-              {Object.keys(attrs).length > 0 && (
-                <div className="attrs">
-                  {Object.entries(attrs).map(([k, v]) => (
-                    <span key={k} className="attr">
-                      <b>{ATTR_LABELS[k] ?? k}:</b> {String(v)}
+      {/* ---- Needs attention ---- */}
+      <div className="dash-cols">
+        <section className="panel">
+          <h2>
+            New leads to contact{" "}
+            <span className="pill">{toContact.length}</span>
+          </h2>
+          {toContact.length === 0 ? (
+            <p className="muted">Nothing waiting — every new lead has been touched. 🎉</p>
+          ) : (
+            <ul className="attn-list">
+              {toContact.slice(0, 8).map((c) => {
+                const age = daysAgo(c.created_at, now);
+                return (
+                  <li key={c.id} className="attn">
+                    <div className="attn-main">
+                      <Link href={`/admin/people/${c.person_id}`}>
+                        {c.people?.name || "Unknown"}
+                      </Link>
+                      <span className="attn-sub">
+                        {inquiryLabel(c.type)}
+                        {c.people?.company ? ` · ${c.people.company}` : ""}
+                      </span>
+                    </div>
+                    <span className={`age ${age >= 7 ? "age-hot" : ""}`}>
+                      {age === 0 ? "today" : `${age}d old`}
                     </span>
-                  ))}
-                </div>
-              )}
+                    <MoveControl
+                      contactId={c.id}
+                      personId={c.person_id}
+                      status={c.status}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {toContact.length > 8 && (
+            <p className="muted more">
+              +{toContact.length - 8} more ·{" "}
+              <Link href="/admin/pipeline">see all in Pipeline</Link>
+            </p>
+          )}
+        </section>
 
-              {lead.message && <p className="lead-message">{lead.message}</p>}
+        <section className="panel">
+          <h2>
+            Going cold <span className="pill">{goingCold.length}</span>
+          </h2>
+          <p className="muted" style={{ marginTop: -8 }}>
+            Open deals with no activity in 7+ days.
+          </p>
+          {goingCold.length === 0 ? (
+            <p className="muted">Nothing stalled. Your pipeline is warm. 👍</p>
+          ) : (
+            <ul className="attn-list">
+              {goingCold.slice(0, 8).map((c) => {
+                const age = daysAgo(
+                  new Date(lastActivity.get(c.id) ?? now).toISOString(),
+                  now
+                );
+                return (
+                  <li key={c.id} className="attn">
+                    <div className="attn-main">
+                      <Link href={`/admin/people/${c.person_id}`}>
+                        {c.people?.name || "Unknown"}
+                      </Link>
+                      <span className="attn-sub">
+                        <span className={`badge badge-status status-${c.status}`}>
+                          {statusLabel(c.status)}
+                        </span>
+                        {c.people?.company ? ` ${c.people.company}` : ""}
+                      </span>
+                    </div>
+                    <span className="age age-hot">{age}d quiet</span>
+                    <MoveControl
+                      contactId={c.id}
+                      personId={c.person_id}
+                      status={c.status}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {goingCold.length > 8 && (
+            <p className="muted more">
+              +{goingCold.length - 8} more ·{" "}
+              <Link href="/admin/pipeline">see all in Pipeline</Link>
+            </p>
+          )}
+        </section>
+      </div>
 
-              {/* Move this inquiry through the pipeline. */}
-              <form action={updateContactStatus} className="stage-form">
-                <input type="hidden" name="contact_id" value={lead.id} />
-                {p && <input type="hidden" name="person_id" value={p.id} />}
-                <label className="stage-label" htmlFor={`stage-${lead.id}`}>
-                  Move to
-                </label>
-                <select
-                  id={`stage-${lead.id}`}
-                  name="to_status"
-                  defaultValue={lead.status}
-                  className="stage-select"
-                >
-                  {PIPELINE_STAGES.map((s) => (
-                    <option key={s} value={s}>
-                      {statusLabel(s)}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  name="note"
-                  placeholder="Note (optional)"
-                  className="stage-note"
+      {/* ---- Pipeline snapshot ---- */}
+      <section className="panel">
+        <h2>Pipeline snapshot</h2>
+        <div className="funnel">
+          {PIPELINE_STAGES.map((s) => (
+            <div key={s} className="funnel-row">
+              <span className="funnel-label">{statusLabel(s)}</span>
+              <div className="funnel-track">
+                <div
+                  className={`funnel-bar status-${s}`}
+                  style={{ width: `${(byStage[s] / maxStage) * 100}%` }}
                 />
-                <button type="submit" className="btn btn-sm">
-                  Update
-                </button>
-              </form>
-            </article>
-          );
-        })
-      )}
+              </div>
+              <span className="funnel-count">{byStage[s]}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ---- 8-week trend ---- */}
+      <section className="panel">
+        <h2>8-week trend</h2>
+        <p className="muted" style={{ marginTop: -8 }}>
+          Inquiries per week (bars) with deals won (dot). Newest week on the right.
+        </p>
+        <div className="trend">
+          {trend.map((t, i) => (
+            <div key={i} className="trend-col">
+              <div className="trend-bar-wrap">
+                {t.won > 0 && (
+                  <span className="trend-won" title={`${t.won} won`}>
+                    {t.won}
+                  </span>
+                )}
+                <div
+                  className="trend-bar"
+                  style={{ height: `${(t.inq / maxTrend) * 100}%` }}
+                  title={`${t.inq} inquiries`}
+                />
+              </div>
+              <span className="trend-num">{t.inq}</span>
+              <span className="trend-x">
+                {i === BUCKETS - 1 ? "this wk" : `-${BUCKETS - 1 - i}`}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

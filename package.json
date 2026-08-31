@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "db:migrate": "node scripts/apply-migration.mjs",
-    "db:seed-admin": "node scripts/seed-admin.mjs"
+    "db:seed-admin": "node scripts/seed-admin.mjs",
+    "db:seed-samples": "node scripts/seed-samples.mjs",
+    "db:clear-samples": "node scripts/seed-samples.mjs --clear"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

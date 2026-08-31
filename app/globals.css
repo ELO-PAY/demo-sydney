@@ -652,3 +652,233 @@ a {
   padding-top: 20px;
   border-top: 1px solid var(--grey-100);
 }
+
+/* ============================================================
+   Weekly dashboard (Build 2b)
+   ============================================================ */
+
+/* ---- KPI tiles ---- */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 720px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.kpi {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 14px rgba(0, 59, 92, 0.08);
+  padding: 18px 20px;
+  border-top: 4px solid var(--teal);
+}
+.kpi-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6a7a84;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.kpi-value {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--navy);
+  margin: 6px 0 4px;
+  line-height: 1.1;
+}
+.kpi-delta {
+  font-size: 13px;
+  color: #6a7a84;
+}
+.kpi-delta.up {
+  color: #2e7d5b;
+  font-weight: 700;
+}
+.kpi-delta.down {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* ---- Two-column attention area ---- */
+.dash-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 860px) {
+  .dash-cols {
+    grid-template-columns: 1fr;
+  }
+}
+.pill {
+  display: inline-block;
+  min-width: 22px;
+  text-align: center;
+  background: var(--navy);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 9px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ---- Attention list ---- */
+.attn-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.attn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 0;
+  border-top: 1px solid var(--grey-100);
+}
+.attn:first-child {
+  border-top: none;
+}
+.attn-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 180px;
+  min-width: 160px;
+}
+.attn-main a {
+  font-weight: 700;
+  color: var(--navy);
+}
+.attn-sub {
+  font-size: 12px;
+  color: #6a7a84;
+}
+.age {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6a7a84;
+  white-space: nowrap;
+}
+.age-hot {
+  color: var(--danger);
+}
+.more {
+  margin: 12px 0 0;
+  font-size: 13px;
+}
+
+/* ---- Inline stage move ---- */
+.move-inline {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.move-inline select {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 7px 9px;
+  border: 1.5px solid var(--grey);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+}
+.move-inline select:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(92, 184, 178, 0.25);
+}
+
+/* ---- Pipeline funnel ---- */
+.funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.funnel-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 40px;
+  align-items: center;
+  gap: 12px;
+}
+.funnel-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  text-align: right;
+}
+.funnel-track {
+  background: var(--grey-100);
+  border-radius: 6px;
+  height: 22px;
+  overflow: hidden;
+}
+.funnel-bar {
+  height: 100%;
+  border-radius: 6px;
+  min-width: 2px;
+  transition: width 0.3s;
+}
+.funnel-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+/* ---- 8-week trend ---- */
+.trend {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 180px;
+  margin-top: 12px;
+}
+.trend-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: 4px;
+}
+.trend-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+}
+.trend-bar {
+  width: 70%;
+  max-width: 44px;
+  background: linear-gradient(180deg, var(--teal) 0%, var(--teal-600) 100%);
+  border-radius: 6px 6px 0 0;
+  min-height: 2px;
+}
+.trend-won {
+  position: absolute;
+  top: -18px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--white);
+  background: #2e7d5b;
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.trend-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.trend-x {
+  font-size: 11px;
+  color: #6a7a84;
+}
