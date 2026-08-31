@@ -1,7 +1,7 @@
 # Project Catalog
 
 ## Stack (already installed and wired — record the values)
-- GitHub repo: [confirm]
+- GitHub repo: ELO-PAY/demo-sydney (https://github.com/ELO-PAY/demo-sydney) — connected, default branch main
 - Vercel project: [confirm]
 - Domain: [confirm]
 - Supabase project: [confirm]
