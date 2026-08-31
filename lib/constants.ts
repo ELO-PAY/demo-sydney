@@ -34,3 +34,47 @@ export const STATUS_LABELS: Record<string, string> = {
   won: "Won",
   lost: "Lost",
 };
+
+// Ordered list of pipeline stages for selects and progress display.
+export const PIPELINE_STAGES = [
+  "new_lead",
+  "contacted",
+  "discovery_call",
+  "proposal",
+  "won",
+  "lost",
+] as const;
+
+export type ContactStatus = (typeof PIPELINE_STAGES)[number];
+
+export function statusLabel(value: string): string {
+  return STATUS_LABELS[value] ?? value;
+}
+
+// Order status — matches the order_status enum.
+export const ORDER_STATUSES = [
+  "pending",
+  "paid",
+  "refunded",
+  "cancelled",
+] as const;
+
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export const ORDER_STATUS_LABELS: Record<string, string> = {
+  pending: "Pending",
+  paid: "Paid",
+  refunded: "Refunded",
+  cancelled: "Cancelled",
+};
+
+export function orderStatusLabel(value: string): string {
+  return ORDER_STATUS_LABELS[value] ?? value;
+}
+
+// Custom attribute display labels (people.attributes jsonb keys).
+export const ATTR_LABELS: Record<string, string> = {
+  number_of_employees: "Employees",
+  current_industry: "Industry",
+  ideal_project_start_date: "Ideal start",
+};

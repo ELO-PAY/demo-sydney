@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./actions";
+import AdminNav from "./AdminNav";
 
 export default async function DashboardLayout({
   children,
@@ -30,6 +31,7 @@ export default async function DashboardLayout({
           </form>
         </div>
       </header>
+      <AdminNav />
       <main className="admin-main">
         <div className="container">{children}</div>
       </main>

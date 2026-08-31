@@ -395,3 +395,260 @@ a {
   text-decoration: underline;
   padding: 0;
 }
+
+/* ---- Admin nav (Build 2) ---- */
+.admin-nav {
+  background: var(--navy-700);
+  border-bottom: 3px solid var(--teal);
+}
+.admin-nav .container {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.admin-nav-link {
+  display: inline-block;
+  padding: 14px 18px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+}
+.admin-nav-link:hover {
+  color: var(--white);
+}
+.admin-nav-link.active {
+  color: var(--white);
+  border-bottom-color: var(--teal);
+}
+
+/* ---- Smaller button variant ---- */
+.btn-sm {
+  padding: 9px 16px;
+  font-size: 14px;
+}
+
+/* ---- Shared helpers ---- */
+.muted {
+  color: #6a7a84;
+}
+.nowrap {
+  white-space: nowrap;
+}
+
+/* ---- Pipeline stage control ---- */
+.stage-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--grey-100);
+}
+.stage-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--navy);
+}
+.stage-select {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--grey);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+}
+.stage-note {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--grey);
+  border-radius: 8px;
+  flex: 1 1 200px;
+  min-width: 140px;
+}
+.stage-select:focus,
+.stage-note:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(92, 184, 178, 0.25);
+}
+
+/* ---- Stage badge colours ---- */
+.status-new_lead {
+  background: var(--teal);
+  color: var(--navy);
+}
+.status-contacted {
+  background: #4a7fa5;
+  color: var(--white);
+}
+.status-discovery_call {
+  background: #6a5aa8;
+  color: var(--white);
+}
+.status-proposal {
+  background: #b8862c;
+  color: var(--white);
+}
+.status-won {
+  background: #2e7d5b;
+  color: var(--white);
+}
+.status-lost {
+  background: #8a8f92;
+  color: var(--white);
+}
+
+/* ---- Order status badge colours ---- */
+.order-pending {
+  background: #b8862c;
+  color: var(--white);
+}
+.order-paid {
+  background: #2e7d5b;
+  color: var(--white);
+}
+.order-refunded {
+  background: #8a8f92;
+  color: var(--white);
+}
+.order-cancelled {
+  background: var(--danger);
+  color: var(--white);
+}
+
+/* ---- Search bar ---- */
+.search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0 0 20px;
+}
+.search input[type="search"] {
+  font-family: inherit;
+  font-size: 15px;
+  padding: 11px 13px;
+  border: 1.5px solid var(--grey);
+  border-radius: 8px;
+  background: var(--white);
+  flex: 1 1 320px;
+  min-width: 200px;
+}
+.search input[type="search"]:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(92, 184, 178, 0.25);
+}
+.search-clear {
+  font-size: 14px;
+}
+
+/* ---- Tables ---- */
+.table-wrap {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 14px rgba(0, 59, 92, 0.08);
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table thead th {
+  text-align: left;
+  background: var(--navy);
+  color: var(--white);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 12px 16px;
+  white-space: nowrap;
+}
+.table tbody td {
+  padding: 12px 16px;
+  border-top: 1px solid var(--grey-100);
+  vertical-align: top;
+  color: #33454f;
+}
+.table tbody tr:hover {
+  background: var(--grey-100);
+}
+.table td .muted {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* ---- Person record panels ---- */
+.panel {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 14px rgba(0, 59, 92, 0.08);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+.panel h2 {
+  color: var(--navy);
+  font-size: 18px;
+  margin: 0 0 14px;
+}
+.inquiry {
+  padding: 16px 0;
+  border-top: 1px solid var(--grey-100);
+}
+.inquiry:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* ---- Status timeline ---- */
+.timeline {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0 0 0 4px;
+}
+.timeline li {
+  position: relative;
+  padding: 0 0 12px 20px;
+  border-left: 2px solid var(--grey);
+}
+.timeline li:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+.tl-when {
+  display: block;
+  font-size: 12px;
+  color: #6a7a84;
+}
+.tl-text {
+  font-size: 14px;
+  color: #33454f;
+}
+.tl-note {
+  color: #4a5b66;
+}
+
+/* ---- Add-order form ---- */
+.order-form {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--grey-100);
+}

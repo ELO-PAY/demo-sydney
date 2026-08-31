@@ -1,11 +1,20 @@
+import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { inquiryLabel, STATUS_LABELS } from "@/lib/constants";
+import {
+  inquiryLabel,
+  statusLabel,
+  PIPELINE_STAGES,
+  ATTR_LABELS,
+} from "@/lib/constants";
+import { formatWhen } from "@/lib/format";
+import { updateContactStatus } from "./actions";
 
 // Always fetch fresh — new leads must appear within seconds.
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type Person = {
+  id: string;
   email: string;
   name: string | null;
   phone: string | null;
@@ -25,33 +34,19 @@ type Lead = {
   people: Person | null;
 };
 
-const ATTR_LABELS: Record<string, string> = {
-  number_of_employees: "Employees",
-  current_industry: "Industry",
-  ideal_project_start_date: "Ideal start",
-};
-
-function formatWhen(iso: string): string {
-  return new Intl.DateTimeFormat("en-AU", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Australia/Sydney",
-  }).format(new Date(iso));
-}
-
-export default async function LeadsPage() {
+export default async function PipelinePage() {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("contacts")
     .select(
-      "id, type, subject, message, status, created_at, people ( email, name, phone, company, role, ok_to_contact, attributes )"
+      "id, type, subject, message, status, created_at, people ( id, email, name, phone, company, role, ok_to_contact, attributes )"
     )
     .order("created_at", { ascending: false });
 
   if (error) {
     return (
       <div className="empty">
-        <p>Couldn&apos;t load leads: {error.message}</p>
+        <p>Couldn&apos;t load the pipeline: {error.message}</p>
       </div>
     );
   }
@@ -60,10 +55,10 @@ export default async function LeadsPage() {
 
   return (
     <>
-      <h1>Leads</h1>
+      <h1>Pipeline</h1>
       <p className="count">
         {leads.length === 0
-          ? "No leads yet."
+          ? "No inquiries yet."
           : `${leads.length} inquir${leads.length === 1 ? "y" : "ies"}, newest first.`}
       </p>
 
@@ -79,14 +74,24 @@ export default async function LeadsPage() {
           return (
             <article key={lead.id} className="lead">
               <div className="lead-top">
-                <p className="lead-name">{p?.name || "Unknown"}</p>
+                <p className="lead-name">
+                  {p ? (
+                    <Link href={`/admin/people/${p.id}`}>
+                      {p.name || "Unknown"}
+                    </Link>
+                  ) : (
+                    "Unknown"
+                  )}
+                </p>
                 <span className="lead-when">{formatWhen(lead.created_at)}</span>
               </div>
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+              <div
+                style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}
+              >
                 <span className="badge">{inquiryLabel(lead.type)}</span>
-                <span className="badge badge-status">
-                  {STATUS_LABELS[lead.status] ?? lead.status}
+                <span className={`badge badge-status status-${lead.status}`}>
+                  {statusLabel(lead.status)}
                 </span>
               </div>
 
@@ -129,6 +134,36 @@ export default async function LeadsPage() {
               )}
 
               {lead.message && <p className="lead-message">{lead.message}</p>}
+
+              {/* Move this inquiry through the pipeline. */}
+              <form action={updateContactStatus} className="stage-form">
+                <input type="hidden" name="contact_id" value={lead.id} />
+                {p && <input type="hidden" name="person_id" value={p.id} />}
+                <label className="stage-label" htmlFor={`stage-${lead.id}`}>
+                  Move to
+                </label>
+                <select
+                  id={`stage-${lead.id}`}
+                  name="to_status"
+                  defaultValue={lead.status}
+                  className="stage-select"
+                >
+                  {PIPELINE_STAGES.map((s) => (
+                    <option key={s} value={s}>
+                      {statusLabel(s)}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  name="note"
+                  placeholder="Note (optional)"
+                  className="stage-note"
+                />
+                <button type="submit" className="btn btn-sm">
+                  Update
+                </button>
+              </form>
             </article>
           );
         })
