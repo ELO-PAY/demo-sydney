@@ -11,10 +11,12 @@
 
 ## Build (filled as we go)
 - Plan written: [done]
-- Build 1 (small) status: ✅ code complete + fully verified locally (form → dedup →
-  attributes → admin login → leads page all pass). GO-LIVE needs two owner steps:
-  (1) add env vars to Vercel, (2) git push to main (auto-deploys). See README-BUILD1.md.
-- Admin account seeded: ✅ emma-lee@austpayroll.com.au (created + sign-in verified)
+- Build 1 (small) status: ✅ LIVE at https://demo-sydney.vercel.app — deployed to
+  Vercel (env vars set for prod/preview/dev), full loop verified end-to-end on the
+  real domain (submit → dedup by email → custom attributes → admin login → leads
+  page, newest first). DB cleared of test data. See README-BUILD1.md.
+- Admin account seeded: ✅ emma-lee@austpayroll.com.au (created + sign-in verified,
+  incl. a live login on production). Password was shown once in terminal at seed time.
 - Build 2 (all) status: [pending]
 - Resend domain verified: [pending] — Build 2
 

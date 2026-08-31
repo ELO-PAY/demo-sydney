@@ -1,38 +1,17 @@
-# Build 1 — Go live (two owner steps)
+# Build 1 — LIVE ✅
 
-Everything is built, committed, and verified locally. Two steps remain, and
-both need your account access (I can't do either for you).
+**Live at https://demo-sydney.vercel.app** — deployed to Vercel and verified
+end-to-end on the real domain.
 
-## Step 1 — Add environment variables in Vercel
+Done during deploy:
+- Env vars set in Vercel for Production, Preview, and Development:
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE`,
+  `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`. (Not set, by design:
+  `SUPABASE_PASSWORD` — local scripts only; `RESEND_API_KEY` — Build 2.)
+- Framework preset pinned to Next.js via `vercel.json`.
+- Repo connected to Vercel; every push to `main` auto-deploys.
 
-Vercel → project **demo-sydney** → **Settings → Environment Variables**.
-Add these **four** for all environments (Production, Preview, Development).
-Copy the values from your local `.env.local` file (git-ignored — the real
-keys live only there):
-
-| Name | Where to copy the value from |
-|------|------------------------------|
-| `NEXT_PUBLIC_SUPABASE_URL`         | `.env.local` line: `NEXT_PUBLIC_SUPABASE_URL` |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE` | `.env.local` line: `NEXT_PUBLIC_SUPABASE_PUBLISHABLE` |
-| `SUPABASE_SERVICE_ROLE_KEY`        | `.env.local` line: `SUPABASE_SERVICE_ROLE_KEY` (secret — server only) |
-| `NEXT_PUBLIC_SITE_URL`             | `https://demo-sydney.vercel.app` |
-
-Do **not** add `SUPABASE_PASSWORD` (only used by local DB scripts) or
-`RESEND_API_KEY` (that's Build 2).
-
-## Step 2 — Push to deploy
-
-The repo is connected to Vercel and auto-deploys on push to `main`. The
-commit is already made locally; just push it:
-
-```bash
-git push origin main
-```
-
-If you set the env vars *after* the first deploy, trigger one more deploy so
-they take effect (Vercel → Deployments → ⋯ → Redeploy).
-
-## Then test the loop (your Definition of Done)
+## Test the loop yourself (your Definition of Done)
 
 1. Open `https://demo-sydney.vercel.app/` and submit the contact form.
 2. Open `https://demo-sydney.vercel.app/admin` → you'll be sent to the login.
