@@ -893,3 +893,283 @@ a {
   font-weight: 600;
   color: var(--navy);
 }
+
+/* ============================================================
+   Post-call detail (Front Door checklist)
+   ============================================================ */
+.call-block {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--grey-100);
+  border-radius: 8px;
+  border: 1px solid var(--grey);
+}
+.call-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.call-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.call-flag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.call-flag-ok {
+  background: #dff2e8;
+  color: #2e7d5b;
+}
+.call-flag-part {
+  background: #f6ecd6;
+  color: #8a6516;
+}
+.call-flag-none {
+  background: var(--white);
+  color: #6a7a84;
+  border: 1px solid var(--grey);
+}
+.call-block .attrs {
+  margin-top: 12px;
+}
+.attr-value b,
+.attr-value {
+  color: var(--navy);
+}
+.attr-value {
+  background: #dff2e8;
+  border-color: #b7e0cc;
+}
+.price-driver {
+  color: var(--teal-600);
+  font-size: 12px;
+}
+.call-form-wrap {
+  margin-top: 12px;
+}
+.call-form-wrap > summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--navy);
+  padding: 6px 0;
+  user-select: none;
+}
+.call-form-wrap > summary:hover {
+  color: var(--teal-600);
+}
+.call-form {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--grey);
+}
+.call-form .field {
+  margin-bottom: 14px;
+}
+.call-form textarea {
+  min-height: 64px;
+}
+
+/* ============================================================
+   In-app generated proposal (printable)
+   ============================================================ */
+.proposal-shell {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.proposal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.proposal {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 48px 52px;
+}
+.proposal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 3px solid var(--teal);
+}
+.proposal-brand {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 20px;
+  color: var(--navy);
+}
+.proposal-brand span {
+  color: var(--teal-600);
+}
+.proposal-ref {
+  text-align: right;
+  font-size: 13px;
+  color: #4a5b66;
+}
+.proposal-ref b {
+  color: var(--navy);
+}
+.proposal-title {
+  color: var(--navy);
+  font-size: 26px;
+  margin: 28px 0 24px;
+}
+.proposal-parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+.proposal-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #6a7a84;
+  margin-bottom: 4px;
+}
+.proposal-parties p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #33454f;
+}
+.proposal-section {
+  margin-top: 28px;
+}
+.proposal-section h2 {
+  color: var(--navy);
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0 0 12px;
+}
+.proposal-scope {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #33454f;
+  margin: 0;
+  white-space: pre-wrap;
+}
+.proposal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.proposal-table th {
+  text-align: left;
+  width: 42%;
+  padding: 10px 14px 10px 0;
+  color: var(--navy);
+  font-weight: 600;
+  vertical-align: top;
+  border-bottom: 1px solid var(--grey-100);
+}
+.proposal-table td {
+  padding: 10px 0;
+  color: #33454f;
+  vertical-align: top;
+  border-bottom: 1px solid var(--grey-100);
+}
+.proposal-price {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+}
+.proposal-price .proposal-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+.proposal-note {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+.proposal-amount {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--teal);
+  white-space: nowrap;
+}
+.proposal-foot {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--grey);
+  font-size: 12.5px;
+  color: #6a7a84;
+  line-height: 1.5;
+}
+.proposal-sign {
+  margin: 10px 0 0;
+  font-weight: 600;
+  color: var(--navy);
+}
+.proposal-gate {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 40px;
+  text-align: center;
+}
+.proposal-gate h1 {
+  color: var(--navy);
+  margin-top: 0;
+}
+@media (max-width: 620px) {
+  .proposal {
+    padding: 28px 22px;
+  }
+  .proposal-parties {
+    grid-template-columns: 1fr;
+  }
+  .proposal-price {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Print: just the proposal, clean margins, no toolbar/nav. */
+@media print {
+  body {
+    background: var(--white);
+  }
+  .admin-header,
+  .admin-nav,
+  .proposal-toolbar {
+    display: none !important;
+  }
+  .proposal-shell {
+    padding: 0;
+    max-width: none;
+  }
+  .proposal {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+  .proposal-price {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

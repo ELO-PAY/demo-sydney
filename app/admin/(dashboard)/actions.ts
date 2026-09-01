@@ -7,6 +7,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   PIPELINE_STAGES,
   ORDER_STATUSES,
+  CALL_FIELDS,
+  getCallDetail,
+  isProposalReady,
   type ContactStatus,
   type OrderStatus,
 } from "@/lib/constants";
@@ -44,6 +47,26 @@ export async function updateContactStatus(formData: FormData): Promise<void> {
   if (!contactId || !PIPELINE_STAGES.includes(toStatus)) return;
 
   const supabase = createAdminClient();
+
+  // Gate: a deal can't move to Proposal until the post-call checklist gives us
+  // a verified scope, a headcount, and a price. This is what kills wrong
+  // assumptions before they reach the client.
+  if (toStatus === "proposal") {
+    const { data: row } = await supabase
+      .from("contacts")
+      .select("metadata")
+      .eq("id", contactId)
+      .single();
+    const call = getCallDetail(row?.metadata as Record<string, unknown> | null);
+    if (!isProposalReady(call)) {
+      throw new Error(
+        "Complete the post-call checklist first — a proposal needs a verified " +
+          "scope, headcount, and an estimated value. Add them on the person's " +
+          "record, then move to Proposal."
+      );
+    }
+  }
+
   const { error } = await supabase.rpc("set_contact_status", {
     p_contact_id: contactId,
     p_to_status: toStatus,
@@ -98,4 +121,76 @@ export async function addOrder(formData: FormData): Promise<void> {
 
   revalidatePath(`/admin/people/${personId}`);
   revalidatePath("/admin/orders");
+}
+
+// Parse "$4,500" / "4500.00" etc. into integer cents. Returns 0 when blank/invalid.
+function parseCents(raw: string): number {
+  const n = Number(raw.replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? Math.round(n * 100) : 0;
+}
+
+// Capture the post-call detail back onto the deal (contacts.metadata.call) —
+// the structured checklist fields, a free-text notes box, and the estimated
+// value from the pricing calculator. This is "log the real detail on the same
+// record and move it forward": if the deal is still early, it advances to
+// Discovery call and logs that move.
+export async function saveCallDetail(formData: FormData): Promise<void> {
+  const actor = await requireActor();
+  const contactId = str(formData, "contact_id");
+  const personId = str(formData, "person_id");
+  if (!contactId) throw new Error("Missing contact.");
+
+  const call: Record<string, unknown> = {};
+  for (const f of CALL_FIELDS) {
+    const v = str(formData, `call_${f.key}`);
+    if (v) call[f.key] = v;
+  }
+  const notes = str(formData, "call_notes");
+  if (notes) call.notes = notes;
+  const valueCents = parseCents(str(formData, "estimated_value"));
+  if (valueCents > 0) call.estimated_value_cents = valueCents;
+  call.logged_by = actor;
+  call.logged_at = new Date().toISOString();
+
+  const supabase = createAdminClient();
+
+  // Merge onto any existing metadata so we don't clobber other keys.
+  const { data: row, error: readErr } = await supabase
+    .from("contacts")
+    .select("metadata, status")
+    .eq("id", contactId)
+    .single();
+  if (readErr) {
+    console.error("saveCallDetail read failed:", readErr);
+    throw new Error("Couldn't load the inquiry. Please try again.");
+  }
+
+  const metadata = {
+    ...((row?.metadata as Record<string, unknown> | null) ?? {}),
+    call,
+  };
+
+  const { error } = await supabase
+    .from("contacts")
+    .update({ metadata })
+    .eq("id", contactId);
+  if (error) {
+    console.error("saveCallDetail update failed:", error);
+    throw new Error("Couldn't save the call detail. Please try again.");
+  }
+
+  // Move the deal forward when it's still at intake: the call has now happened.
+  if (row?.status === "new_lead" || row?.status === "contacted") {
+    const { error: moveErr } = await supabase.rpc("set_contact_status", {
+      p_contact_id: contactId,
+      p_to_status: "discovery_call",
+      p_actor: actor,
+      p_note: "Call detail captured",
+    });
+    if (moveErr) console.error("saveCallDetail stage move failed:", moveErr);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/pipeline");
+  if (personId) revalidatePath(`/admin/people/${personId}`);
 }

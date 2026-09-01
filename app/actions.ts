@@ -2,7 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { INQUIRY_TYPE_VALUES, INDUSTRIES } from "@/lib/constants";
+import {
+  INQUIRY_TYPE_VALUES,
+  INDUSTRIES,
+  URGENCY_VALUES,
+  urgencyLabel,
+} from "@/lib/constants";
 
 export type FormState = {
   ok: boolean;
@@ -35,6 +40,8 @@ export async function submitInquiry(
   const numberOfEmployees = str(formData, "number_of_employees");
   const currentIndustry = str(formData, "current_industry");
   const idealStart = str(formData, "ideal_project_start_date");
+  const award = str(formData, "award");
+  const urgency = str(formData, "urgency");
 
   const fieldErrors: Record<string, string> = {};
   if (!name) fieldErrors.name = "Please enter your name.";
@@ -47,6 +54,9 @@ export async function submitInquiry(
     fieldErrors.current_industry = "Please choose a valid industry.";
   if (idealStart && Number.isNaN(Date.parse(idealStart)))
     fieldErrors.ideal_project_start_date = "Please enter a valid date.";
+  if (!urgency) fieldErrors.urgency = "Please tell us how urgent this is.";
+  else if (!URGENCY_VALUES.includes(urgency))
+    fieldErrors.urgency = "Please choose a valid option.";
 
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, error: "Please fix the highlighted fields.", fieldErrors };
@@ -57,6 +67,9 @@ export async function submitInquiry(
   if (numberOfEmployees) attributes.number_of_employees = numberOfEmployees;
   if (currentIndustry) attributes.current_industry = currentIndustry;
   if (idealStart) attributes.ideal_project_start_date = idealStart;
+  if (award) attributes.award = award;
+  // Store the human label so it reads cleanly everywhere it's displayed.
+  if (urgency) attributes.urgency = urgencyLabel(urgency);
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
 

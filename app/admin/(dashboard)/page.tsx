@@ -13,7 +13,24 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const DAY = 86400000;
+const HOUR = 3600000;
+const SLA_HOURS = 24; // first-call SLA: call every new enquiry within 24 hours
 const OPEN_MIDDLE = ["contacted", "discovery_call", "proposal"];
+
+// A short "how long since it landed" label against the 24h first-call SLA.
+function slaLabel(iso: string, now: number): { text: string; overdue: boolean } {
+  const ms = now - new Date(iso).getTime();
+  const hrs = ms / HOUR;
+  if (hrs > SLA_HOURS) {
+    const over = Math.floor((ms - SLA_HOURS * HOUR) / HOUR);
+    return {
+      text: over >= 24 ? `${Math.floor(over / 24)}d overdue` : `${over}h overdue`,
+      overdue: true,
+    };
+  }
+  const left = Math.max(0, Math.ceil((SLA_HOURS * HOUR - ms) / HOUR));
+  return { text: `${left}h left`, overdue: false };
+}
 
 type Contact = {
   id: string;
@@ -191,6 +208,9 @@ export default async function DashboardPage() {
   const toContact = contacts
     .filter((c) => c.status === "new_lead")
     .sort((a, b) => a.created_at.localeCompare(b.created_at)); // oldest first
+  const slaBreached = toContact.filter(
+    (c) => now - new Date(c.created_at).getTime() > SLA_HOURS * HOUR
+  ).length;
 
   const goingCold = contacts
     .filter(
@@ -303,15 +323,24 @@ export default async function DashboardPage() {
       <div className="dash-cols">
         <section className="panel">
           <h2>
-            New leads to contact{" "}
+            New leads to call{" "}
             <span className="pill">{toContact.length}</span>
           </h2>
+          <p className="muted" style={{ marginTop: -8 }}>
+            First-call SLA: within {SLA_HOURS}h of enquiry.
+            {slaBreached > 0 && (
+              <>
+                {" "}
+                <b className="age-hot">{slaBreached} over SLA.</b>
+              </>
+            )}
+          </p>
           {toContact.length === 0 ? (
-            <p className="muted">Nothing waiting — every new lead has been touched. 🎉</p>
+            <p className="muted">Nothing waiting — every new lead has been called. 🎉</p>
           ) : (
             <ul className="attn-list">
               {toContact.slice(0, 8).map((c) => {
-                const age = daysAgo(c.created_at, now);
+                const sla = slaLabel(c.created_at, now);
                 return (
                   <li key={c.id} className="attn">
                     <div className="attn-main">
@@ -323,8 +352,8 @@ export default async function DashboardPage() {
                         {c.people?.company ? ` · ${c.people.company}` : ""}
                       </span>
                     </div>
-                    <span className={`age ${age >= 7 ? "age-hot" : ""}`}>
-                      {age === 0 ? "today" : `${age}d old`}
+                    <span className={`age ${sla.overdue ? "age-hot" : ""}`}>
+                      {sla.text}
                     </span>
                     <MoveControl
                       contactId={c.id}

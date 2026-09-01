@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitInquiry, type FormState } from "./actions";
-import { INQUIRY_TYPES, INDUSTRIES } from "@/lib/constants";
+import { INQUIRY_TYPES, INDUSTRIES, URGENCY_LEVELS } from "@/lib/constants";
 
 const initialState: FormState = { ok: false };
 
@@ -98,6 +98,34 @@ export default function ContactForm() {
             ))}
           </select>
           {fe.current_industry && <span className="req">{fe.current_industry}</span>}
+        </div>
+      </div>
+
+      <div className="grid-2">
+        <div className="field">
+          <label htmlFor="award">Award or industry instrument</label>
+          <input
+            id="award"
+            name="award"
+            type="text"
+            placeholder="e.g. SCHADS, Retail Award, or 'not sure'"
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="urgency">
+            How urgent is this? <span className="req">*</span>
+          </label>
+          <select id="urgency" name="urgency" defaultValue="" required>
+            <option value="" disabled>
+              Choose one…
+            </option>
+            {URGENCY_LEVELS.map((u) => (
+              <option key={u.value} value={u.value}>
+                {u.label}
+              </option>
+            ))}
+          </select>
+          {fe.urgency && <span className="req">{fe.urgency}</span>}
         </div>
       </div>
 

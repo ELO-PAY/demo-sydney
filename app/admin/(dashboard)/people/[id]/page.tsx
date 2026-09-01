@@ -7,9 +7,12 @@ import {
   orderStatusLabel,
   ORDER_STATUSES,
   ATTR_LABELS,
+  CALL_FIELDS,
+  getCallDetail,
+  isProposalReady,
 } from "@/lib/constants";
 import { formatWhen, formatMoney } from "@/lib/format";
-import { addOrder } from "../../actions";
+import { addOrder, saveCallDetail } from "../../actions";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -30,6 +33,7 @@ type ContactRow = {
   message: string | null;
   status: string;
   created_at: string;
+  metadata: Record<string, unknown> | null;
   activity_log: ActivityRow[] | null;
 };
 
@@ -62,7 +66,7 @@ export default async function PersonPage({
     supabase
       .from("contacts")
       .select(
-        "id, type, subject, message, status, created_at, activity_log ( id, from_status, to_status, actor, note, created_at )"
+        "id, type, subject, message, status, created_at, metadata, activity_log ( id, from_status, to_status, actor, note, created_at )"
       )
       .eq("person_id", id)
       .order("created_at", { ascending: false }),
@@ -157,6 +161,158 @@ export default async function PersonPage({
                   </p>
                 )}
                 {c.message && <p className="lead-message">{c.message}</p>}
+
+                {/* ---- Post-call detail (the Front Door checklist) ---- */}
+                {(() => {
+                  const call = getCallDetail(c.metadata);
+                  const ready = isProposalReady(call);
+                  const valueCents =
+                    typeof call?.estimated_value_cents === "number"
+                      ? call.estimated_value_cents
+                      : 0;
+                  return (
+                    <div className="call-block">
+                      <div className="call-head">
+                        <span className="call-title">Call detail</span>
+                        {call ? (
+                          ready ? (
+                            <span className="call-flag call-flag-ok">
+                              ✓ Ready for proposal
+                            </span>
+                          ) : (
+                            <span className="call-flag call-flag-part">
+                              Needs scope, headcount &amp; value
+                            </span>
+                          )
+                        ) : (
+                          <span className="call-flag call-flag-none">
+                            Not captured yet
+                          </span>
+                        )}
+                      </div>
+
+                      {call && (
+                        <>
+                          <div className="attrs">
+                            {CALL_FIELDS.filter((f) => call[f.key]).map((f) => (
+                              <span key={f.key} className="attr">
+                                <b>{f.label}:</b> {String(call[f.key])}
+                              </span>
+                            ))}
+                            {valueCents > 0 && (
+                              <span className="attr attr-value">
+                                <b>Estimated value:</b> {formatMoney(valueCents)}
+                              </span>
+                            )}
+                          </div>
+                          {call.notes ? (
+                            <p className="lead-message">{String(call.notes)}</p>
+                          ) : null}
+                          {call.logged_at && (
+                            <p className="muted" style={{ fontSize: 12, margin: "8px 0 0" }}>
+                              Logged{" "}
+                              {formatWhen(String(call.logged_at))}
+                              {call.logged_by ? ` · ${call.logged_by}` : ""}
+                            </p>
+                          )}
+                          {ready && (
+                            <p style={{ margin: "12px 0 0" }}>
+                              <Link
+                                href={`/admin/proposal/${c.id}`}
+                                className="btn btn-sm"
+                                target="_blank"
+                              >
+                                Generate proposal →
+                              </Link>
+                            </p>
+                          )}
+                        </>
+                      )}
+
+                      <details className="call-form-wrap" open={!call}>
+                        <summary>
+                          {call ? "Update call detail" : "Log call detail"}
+                        </summary>
+                        <form action={saveCallDetail} className="call-form">
+                          <input type="hidden" name="contact_id" value={c.id} />
+                          <input type="hidden" name="person_id" value={person.id} />
+                          {CALL_FIELDS.map((f) => {
+                            const prefill =
+                              (call?.[f.key] as string | undefined) ??
+                              (f.fromAttribute
+                                ? (attrs[f.fromAttribute] as string | undefined)
+                                : undefined) ??
+                              "";
+                            return (
+                              <div className="field" key={f.key}>
+                                <label htmlFor={`call_${f.key}_${c.id}`}>
+                                  {f.label}
+                                  {f.priceDriver && (
+                                    <span
+                                      className="price-driver"
+                                      title="Feeds the pricing calculator"
+                                    >
+                                      {" "}
+                                      ⚙
+                                    </span>
+                                  )}
+                                </label>
+                                {f.type === "textarea" ? (
+                                  <textarea
+                                    id={`call_${f.key}_${c.id}`}
+                                    name={`call_${f.key}`}
+                                    placeholder={f.placeholder}
+                                    defaultValue={prefill}
+                                  />
+                                ) : (
+                                  <input
+                                    id={`call_${f.key}_${c.id}`}
+                                    name={`call_${f.key}`}
+                                    type="text"
+                                    placeholder={f.placeholder}
+                                    defaultValue={prefill}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+                          <div className="field">
+                            <label htmlFor={`estimated_value_${c.id}`}>
+                              Estimated value (AUD) from the calculator
+                              <span className="price-driver"> ⚙</span>
+                            </label>
+                            <input
+                              id={`estimated_value_${c.id}`}
+                              name="estimated_value"
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="e.g. 4500"
+                              defaultValue={
+                                valueCents > 0 ? String(valueCents / 100) : ""
+                              }
+                            />
+                          </div>
+                          <div className="field">
+                            <label htmlFor={`call_notes_${c.id}`}>
+                              Call notes
+                            </label>
+                            <textarea
+                              id={`call_notes_${c.id}`}
+                              name="call_notes"
+                              placeholder="Anything the fields above don't capture…"
+                              defaultValue={
+                                (call?.notes as string | undefined) ?? ""
+                              }
+                            />
+                          </div>
+                          <button type="submit" className="btn btn-sm">
+                            Save call detail
+                          </button>
+                        </form>
+                      </details>
+                    </div>
+                  );
+                })()}
 
                 <ul className="timeline">
                   <li>
