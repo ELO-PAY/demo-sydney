@@ -33,6 +33,17 @@
   `npm run db:clear-samples` before real use; reseed with db:seed-samples.
   NOT DONE: Resend / confirmation email — deferred by choice until a sending
   domain is verified (see below). So Build 2's DoD is not fully met yet.
+- Front Door MVP status: ✅ LIVE at https://demo-sydney.vercel.app (deployed
+  2026-09-01, commit 9091e94). Integrates the Front Door onboarding vision onto
+  the app as the deal-record spine (NOT HubSpot). No DB migration — call detail
+  in contacts.metadata, new form fields in people.attributes. Shipped: enquiry
+  form urgency+award; post-call checklist capture on the person record
+  (auto-advances to discovery_call); proposal gate (scope+headcount+value);
+  in-app printable proposal at /admin/proposal/[contactId]; 24h-SLA-aware call
+  queue on the dashboard; new_lead relabelled "New submission". Decisions +
+  roadmap: docs/product/front-door-integration-plan.md. Pending: end-to-end run
+  on a live admin login. Pricing still manual Excel → value typed onto the deal
+  (migrate native = 30-day job). Kantata handoff manual for now.
 - Resend domain verified: [pending] — DEFERRED. The site is on demo-sydney.vercel.app,
   a Vercel subdomain that cannot be verified in Resend (no DNS control). Needs a
   real owned domain + DNS records before email can be wired. When ready: add the
